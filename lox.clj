@@ -18,16 +18,18 @@
     "var"
     "while"})
 
+(declare string number identifier is-digit? is-alpha?)
+
 ;; token:
 ;; { :type :offset :lexeme? }
 (defn- next-token [source start]
   (if (>= start (count source))
     nil
     (let [current-char (.charAt source start)
-          match (fn [char]
+          match (fn [c]
                   (and
                     (< (+ start 1) (count source))
-                    (= char (.charAt source (+ start 1)))))
+                    (= c (.charAt source (+ start 1)))))
           return (fn [token & [from]]
                    (lazy-seq
                      (cons (assoc token :offset start)
@@ -55,17 +57,22 @@
         \> (if (match \=)
              (return { :type :greater_equal } (+ start 2))
              (return { :type :greater }))
-        \\ (if (match \\)
+        \/ (if (match \/)
              (let [eol (.indexOf source (int \newline) start)]
                (if (= eol -1)
                  nil
-                 #(next-token source (+ eol 1))))
+                 (next-token source (+ eol 1))))
              (return { :type :slash }))
-        \space #(next-token source (+ start 1))
-        \tab #(next-token source (+ start 1))
-        \return #(next-token source (+ start 1))
-        \newline #(next-token source (+ start 1))
-        ))))
+        \space (next-token source (+ start 1))
+        \tab (next-token source (+ start 1))
+        \return (next-token source (+ start 1))
+        \newline (next-token source (+ start 1))
+        \" (string source start)
+        (if (is-digit? current-char)
+          (number source start)
+          (if (is-alpha? current-char)
+            (identifier source start)
+            (return :type :error :offset start :error (format "Unexpected character") :character current-char )))))))
 
 (defn- string [source start]
   (let [closing-quote (.indexOf source (int \") (+ start 1))]
@@ -96,7 +103,22 @@
 (comment
   (is-digit? \0))
 
-(defn- identifier [source start])
+(defn- identifier [source start]
+  (let [return (fn return [end]
+                 (let [lexeme (.substring source start end)
+                       rreturn (fn [token] 
+                                 (lazy-seq (cons (assoc token :offset start :lexeme lexeme )
+                                                 (next-token source (+ end 1)))))]
+                   (if (keywords lexeme)
+                     (rreturn { :type (keyword lexeme) })
+                     (rreturn { :type :identifier }))))]
+    (loop [i start]
+    (if (< i (count source))
+      (let [c (.charAt source i)]
+        (if (is-alphanumeric? c)
+          (recur (+ i 1))
+          (return i)))
+      (return i)))))
 
 (defn- number [source start]
   (let [return (fn [end]
@@ -109,7 +131,7 @@
       (if (< i (count source))
         (let [c (.charAt source i)]
           (if (is-digit? c)
-            (recur (+ 1 i))
+            (recur (+ i 1))
             (if (and (= c \.)
                      (< i (- (count source) 1))
                      (is-digit? (.charAt source (+ i 1))))
@@ -128,4 +150,13 @@
   (number "12)" 0))
 
 (defn tokenize [source]
-  (trampoline next-token source 0))
+  (next-token source 0))
+
+(comment
+  (tokenize "
+12.0
+// comment
+class Poop {
+}
+"))
+
