@@ -1,4 +1,4 @@
-(ns lox)
+(ns lox.token)
 
 (def keywords
   #{"and"
@@ -18,61 +18,7 @@
     "var"
     "while"})
 
-(declare string number identifier is-digit? is-alpha?)
-
-;; token:
-;; { :type :offset :lexeme? }
-(defn- next-token [source start]
-  (if (>= start (count source))
-    nil
-    (let [current-char (.charAt source start)
-          match (fn [c]
-                  (and
-                    (< (+ start 1) (count source))
-                    (= c (.charAt source (+ start 1)))))
-          return (fn [token & [from]]
-                   (lazy-seq
-                     (cons (assoc token :offset start)
-                           (next-token source (or from (+ start 1))))))]
-      (case current-char
-        \( (return { :type :left_paren })
-        \) (return { :type :right_paren })
-        \{ (return { :type :left_brace })
-        \} (return { :type :right_brace })
-        \, (return { :type :comma })
-        \. (return { :type :dot })
-        \- (return { :type :minus })
-        \+ (return { :type :plus })
-        \; (return { :type :semicolon })
-        \* (return { :type :star })
-        \! (if (match \=)
-             (return { :type :bang_equal } (+ start 2))
-             (return { :type :bang }))
-        \= (if (match \=)
-             (return { :type :equal_equal } (+ start 2))
-             (return { :type :equal }))
-        \< (if (match \=)
-             (return { :type :less_equal } (+ start 2))
-             (return { :type :less }))
-        \> (if (match \=)
-             (return { :type :greater_equal } (+ start 2))
-             (return { :type :greater }))
-        \/ (if (match \/)
-             (let [eol (.indexOf source (int \newline) start)]
-               (if (= eol -1)
-                 nil
-                 (next-token source (+ eol 1))))
-             (return { :type :slash }))
-        \space (next-token source (+ start 1))
-        \tab (next-token source (+ start 1))
-        \return (next-token source (+ start 1))
-        \newline (next-token source (+ start 1))
-        \" (string source start)
-        (if (is-digit? current-char)
-          (number source start)
-          (if (is-alpha? current-char)
-            (identifier source start)
-            (return :type :error :offset start :error (format "Unexpected character") :character current-char )))))))
+(declare next-token)
 
 (defn- string [source start]
   (let [closing-quote (.indexOf source (int \") (+ start 1))]
@@ -148,6 +94,60 @@
 (comment
   (number "12.0" 0)
   (number "12)" 0))
+
+;; token:
+;; { :type :offset :lexeme? :literal? }
+(defn- next-token [source start]
+  (if (>= start (count source))
+    nil
+    (let [current-char (.charAt source start)
+          match (fn [c]
+                  (and
+                    (< (+ start 1) (count source))
+                    (= c (.charAt source (+ start 1)))))
+          return (fn [token & [from]]
+                   (lazy-seq
+                     (cons (assoc token :offset start)
+                           (next-token source (or from (+ start 1))))))]
+      (case current-char
+        \( (return { :type :left_paren })
+        \) (return { :type :right_paren })
+        \{ (return { :type :left_brace })
+        \} (return { :type :right_brace })
+        \, (return { :type :comma })
+        \. (return { :type :dot })
+        \- (return { :type :minus })
+        \+ (return { :type :plus })
+        \; (return { :type :semicolon })
+        \* (return { :type :star })
+        \! (if (match \=)
+             (return { :type :bang_equal } (+ start 2))
+             (return { :type :bang }))
+        \= (if (match \=)
+             (return { :type :equal_equal } (+ start 2))
+             (return { :type :equal }))
+        \< (if (match \=)
+             (return { :type :less_equal } (+ start 2))
+             (return { :type :less }))
+        \> (if (match \=)
+             (return { :type :greater_equal } (+ start 2))
+             (return { :type :greater }))
+        \/ (if (match \/)
+             (let [eol (.indexOf source (int \newline) start)]
+               (if (= eol -1)
+                 nil
+                 (next-token source (+ eol 1))))
+             (return { :type :slash }))
+        \space (next-token source (+ start 1))
+        \tab (next-token source (+ start 1))
+        \return (next-token source (+ start 1))
+        \newline (next-token source (+ start 1))
+        \" (string source start)
+        (if (is-digit? current-char)
+          (number source start)
+          (if (is-alpha? current-char)
+            (identifier source start)
+            (return :type :error :offset start :error (format "Unexpected character") :character current-char )))))))
 
 (defn tokenize [source]
   (next-token source 0))
