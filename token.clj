@@ -71,7 +71,7 @@
                  (let [lexeme (.substring source start end)
                        value (Double/parseDouble lexeme)]
                    (lazy-seq (cons
-                               { :type :string :offset start :lexeme lexeme :literal value }
+                               { :type :number :offset start :lexeme lexeme :literal value }
                                (next-token source end)))))]
     (loop [i start]
       (if (< i (count source))
@@ -110,10 +110,10 @@
                      (cons (assoc token :offset start)
                            (next-token source (or from (+ start 1))))))]
       (case current-char
-        \( (return { :type :left_paren })
-        \) (return { :type :right_paren })
-        \{ (return { :type :left_brace })
-        \} (return { :type :right_brace })
+        \( (return { :type :left-paren })
+        \) (return { :type :right-paren })
+        \{ (return { :type :left-brace })
+        \} (return { :type :right-brace })
         \, (return { :type :comma })
         \. (return { :type :dot })
         \- (return { :type :minus })
@@ -121,16 +121,16 @@
         \; (return { :type :semicolon })
         \* (return { :type :star })
         \! (if (match \=)
-             (return { :type :bang_equal } (+ start 2))
+             (return { :type :bang-equal } (+ start 2))
              (return { :type :bang }))
         \= (if (match \=)
-             (return { :type :equal_equal } (+ start 2))
+             (return { :type :equal-equal } (+ start 2))
              (return { :type :equal }))
         \< (if (match \=)
-             (return { :type :less_equal } (+ start 2))
+             (return { :type :less-equal } (+ start 2))
              (return { :type :less }))
         \> (if (match \=)
-             (return { :type :greater_equal } (+ start 2))
+             (return { :type :greater-equal } (+ start 2))
              (return { :type :greater }))
         \/ (if (match \/)
              (let [eol (.indexOf source (int \newline) start)]
