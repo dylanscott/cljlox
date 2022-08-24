@@ -11,9 +11,7 @@
 ;; primary    -> NUMBER | STRING | "true" | "false" | "nil" | "("  expression ")"
 
 (defn- match? [tokens types]
-  (let [next-token (first tokens)]
-    (and (not (nil? next-token))
-         (some (partial = (next-token :type)) types))))
+  (some (partial = (-> tokens first :type)) types))
 
 (defn- parse-error [message token]
   (ex-info message { :token token }))
