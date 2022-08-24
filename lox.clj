@@ -1,7 +1,10 @@
 (ns lox
   (:require [lox.token :refer [tokenize]]
             [lox.parse :refer [parse]]
-            [clojure.pprint]))
+            [clojure.pprint]
+            [clojure.tools.namespace.repl :refer [refresh]]))
+
+(comment (refresh))
 
 (def pprint (bound-fn* clojure.pprint/pprint))
 (comment
@@ -17,3 +20,5 @@
 
 (comment
   (parse-source "(1 -2) / 3"))
+(comment
+  (parse-source "((1)"))

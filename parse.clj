@@ -27,7 +27,7 @@
   (try
     (expression tokens)
     (catch Exception e
-      (print (ex-data e))
+      (print (ex-message e) (ex-data e))
       nil)))
 
 (defn- primary [tokens]
