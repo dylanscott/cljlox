@@ -16,7 +16,8 @@
   (let [tokens (tokenize source)]
     (tap> tokens)
     (let [parsed (parse tokens)]
-      (tap> parsed))))
+      (tap> parsed)
+      parsed)))
 
 (comment
   (parse-source "(1 -2) / 3"))
