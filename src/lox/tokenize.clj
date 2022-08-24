@@ -1,4 +1,4 @@
-(ns lox.token)
+(ns lox.tokenize)
 
 (def keywords
   #{"and"

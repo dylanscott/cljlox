@@ -1,5 +1,5 @@
 (ns lox
-  (:require [lox.token :refer [tokenize]]
+  (:require [lox.tokenize :refer [tokenize]]
             [lox.parse :refer [parse]]
             [clojure.pprint]
             [clojure.tools.namespace.repl :refer [refresh]]))
