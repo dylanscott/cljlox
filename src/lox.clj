@@ -7,8 +7,7 @@
 (comment (refresh))
 
 (def pprint (bound-fn* clojure.pprint/pprint))
-(comment
-  (add-tap pprint))
+(add-tap pprint)
 (comment
   (remove-tap pprint))
 
