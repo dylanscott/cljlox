@@ -15,10 +15,20 @@
     (and (not (nil? next-token))
          (some (partial = (next-token :type)) types))))
 
+(defn- parse-error [message token]
+  (ex-info message { :token token }))
+
 (declare equality)
 
 (defn expression [tokens]
   (-> tokens equality :expr))
+
+(defn parse [tokens]
+  (try
+    (expression tokens)
+    (catch Exception e
+      (print (ex-data e))
+      nil)))
 
 (defn- primary [tokens]
   (let [return (fn [value] { :expr { :type :literal :value value } :rest (rest tokens) })
@@ -29,10 +39,11 @@
       :nil (return nil)
       :number (return (token :literal))
       :string (return (token :literal))
-      :left-paren (let [{ expr :expr remaining-tokens :rest } (equality (rest tokens))]
-                    (if (= :right-paren (-> remaining-tokens first :type))
+      :left-paren (let [{ expr :expr remaining-tokens :rest } (equality (rest tokens))
+                        next-token (first remaining-tokens)]
+                    (if (= :right-paren (-> next-token :type))
                       { :expr { :type :grouping :expr expr } :rest (rest remaining-tokens) }
-                      (throw (ex-info "Expect ')' after expression." { :type :unclosed-group })))))))
+                      (throw (parse-error "Expect ')' after expression." next-token)))))))
 
 (defn- unary [tokens]
   (if (match? tokens [:bang :minus])
