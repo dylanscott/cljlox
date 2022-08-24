@@ -1,6 +1,7 @@
 {:deps
  {org.clojure/tools.namespace {:mvn/version "1.3.0"}
   org.clojure/core.match {:mvn/version "1.0.0"}}
+ :paths ["src"]
  :aliases
  {:repl/conjure
   {:extra-deps {nrepl/nrepl       {:mvn/version "0.9.0"}
