@@ -1,6 +1,7 @@
 (ns lox
   (:require [lox.tokenize :refer [tokenize]]
             [lox.parse :refer [parse]]
+            [lox.evaluate :refer [evaluate]]
             [clojure.pprint]
             [clojure.tools.namespace.repl :refer [refresh]]))
 
@@ -11,14 +12,14 @@
 (comment
   (remove-tap pprint))
 
-(defn parse-source [source]
+(defn run [source]
   (let [tokens (tokenize source)]
     (tap> tokens)
     (let [parsed (parse tokens)]
       (tap> parsed)
-      parsed)))
+      (evaluate parsed))))
 
 (comment
-  (parse-source "(1 -2) / 3"))
+  (run "(1 -2) / 3"))
 (comment
-  (parse-source "((1)"))
+  (run "2 >= 2"))

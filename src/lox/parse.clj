@@ -67,7 +67,7 @@
   (parse-binary tokens factor [:minus :plus]))
 
 (defn- comparison [tokens]
-  (parse-binary tokens term [:greater :greater_equal :less :less_equal]))
+  (parse-binary tokens term [:greater :greater-equal :less :less-equal]))
 
 (defn- equality [tokens]
-  (parse-binary tokens comparison [:bang_equal :equal_equal]))
+  (parse-binary tokens comparison [:bang-equal :equal-equal]))
